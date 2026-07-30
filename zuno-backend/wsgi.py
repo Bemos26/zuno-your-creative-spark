@@ -33,6 +33,13 @@ class PrefixMiddleware:
         return self.wsgi_app(environ, start_response)
 
 
+# Initialize the database schema if needed
+try:
+    import init_db
+    init_db.init_db()
+except Exception as e:
+    print(f"Database initialization failed (or already initialized): {e}")
+
 application = create_app("production")
 
 # If URL_PREFIX is set (e.g. "/waitlist"), wrap the app so that prefix

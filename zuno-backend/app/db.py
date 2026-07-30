@@ -15,18 +15,22 @@ How it works, step by step:
    when they're done (you'll see `finally: conn.close()` in models/waitlist.py).
 """
 
-import sqlite3
+import pymysql
+import pymysql.cursors
 from flask import current_app
-import os
 
 def get_db_connection():
     """
-    Opens a new connection to the zuno_waitlist SQLite database.
+    Opens a new connection to the MySQL database.
     """
-    db_path = os.path.join(current_app.root_path, '..', 'waitlist.db')
-    conn = sqlite3.connect(
-        db_path,
-        detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+    conn = pymysql.connect(
+        host=current_app.config["DB_HOST"],
+        user=current_app.config["DB_USER"],
+        password=current_app.config["DB_PASSWORD"],
+        database=current_app.config["DB_NAME"],
+        port=int(current_app.config["DB_PORT"]),
+        cursorclass=pymysql.cursors.DictCursor,
+        autocommit=False,
+        ssl={'ca': None}  # Required for Aiven SSL
     )
-    conn.row_factory = sqlite3.Row
     return conn

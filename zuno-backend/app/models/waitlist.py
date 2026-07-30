@@ -10,7 +10,7 @@ which makes bugs far easier to find later ("something's wrong with how
 we save entries" -> you know to look here, and only here).
 
 *** SECURITY: READ THIS ***
-Every query below builds SQL using ? placeholders, with the actual
+Every query below builds SQL using %s placeholders, with the actual
 values passed as a separate tuple to `cursor.execute(sql, values)`.
 This is what prevents SQL injection: PyMySQL escapes each value safely
 before it ever reaches MySQL, so even if someone submits an email like
@@ -34,7 +34,7 @@ def find_by_email(email: str):
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE email = ?",
+            "SELECT * FROM waitlist_entries WHERE email = %s",
             (email,),
         )
         row = cursor.fetchone()
@@ -70,7 +70,7 @@ def create_waitlist_entry(
                 (public_id, full_name, email, referral_source,
                  ip_address, user_agent, verification_token,
                  referral_code, referred_by_code)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 public_id,
@@ -88,13 +88,13 @@ def create_waitlist_entry(
         new_id = cursor.lastrowid
 
         cursor.execute(
-            "UPDATE waitlist_entries SET position = ? WHERE id = ?",
+            "UPDATE waitlist_entries SET position = %s WHERE id = %s",
             (new_id, new_id),
         )
 
         conn.commit()
 
-        cursor.execute("SELECT * FROM waitlist_entries WHERE id = ?", (new_id,))
+        cursor.execute("SELECT * FROM waitlist_entries WHERE id = %s", (new_id,))
         row = cursor.fetchone()
         return dict(row) if row else None
 
@@ -119,7 +119,7 @@ def verify_by_token(token: str):
         cursor = conn.cursor()
         # Step 1: find the matching row
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE verification_token = ?",
+            "SELECT * FROM waitlist_entries WHERE verification_token = %s",
             (token,),
         )
         row = cursor.fetchone()
@@ -132,7 +132,7 @@ def verify_by_token(token: str):
             """
             UPDATE waitlist_entries
             SET is_verified = TRUE, verification_token = NULL
-            WHERE id = ?
+            WHERE id = %s
             """,
             (row["id"],),
         )
@@ -140,7 +140,7 @@ def verify_by_token(token: str):
 
         # Step 3: read back the fresh row to return to the caller.
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE id = ?", (row["id"],)
+            "SELECT * FROM waitlist_entries WHERE id = %s", (row["id"],)
         )
         row = cursor.fetchone()
         return dict(row) if row else None
@@ -166,7 +166,7 @@ def _generate_unique_referral_code(cursor) -> str:
     while True:
         code = _generate_code()
         cursor.execute(
-            "SELECT id FROM waitlist_entries WHERE referral_code = ?", (code,)
+            "SELECT id FROM waitlist_entries WHERE referral_code = %s", (code,)
         )
         if not cursor.fetchone():
             return code
@@ -178,7 +178,7 @@ def find_by_referral_code(code: str):
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE referral_code = ?",
+            "SELECT * FROM waitlist_entries WHERE referral_code = %s",
             (code,),
         )
         row = cursor.fetchone()
@@ -196,7 +196,7 @@ def award_referral_points(referral_code: str, points: int) -> None:
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "UPDATE waitlist_entries SET points = points + ? WHERE referral_code = ?",
+            "UPDATE waitlist_entries SET points = points + %s WHERE referral_code = %s",
             (points, referral_code),
         )
         conn.commit()
@@ -215,7 +215,7 @@ def count_referrals_by_code(code: str) -> int:
         cursor.execute(
             """
             SELECT COUNT(*) AS total FROM waitlist_entries
-            WHERE referred_by_code = ? AND is_verified = TRUE
+            WHERE referred_by_code = %s AND is_verified = TRUE
             """,
             (code,),
         )
@@ -263,9 +263,9 @@ def list_all_entries(search: str = None) -> list:
         params = ()
         if search:
             sql += """
-                WHERE w.full_name LIKE ?
-                   OR w.email LIKE ?
-                   OR w.referral_code LIKE ?
+                WHERE w.full_name LIKE %s
+                   OR w.email LIKE %s
+                   OR w.referral_code LIKE %s
             """
             term = f"%{search}%"
             params = (term, term, term)
@@ -283,7 +283,7 @@ def find_by_public_id(public_id: str):
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE public_id = ?",
+            "SELECT * FROM waitlist_entries WHERE public_id = %s",
             (public_id,),
         )
         row = cursor.fetchone()
@@ -298,12 +298,12 @@ def set_points(public_id: str, points: int) -> dict:
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "UPDATE waitlist_entries SET points = ? WHERE public_id = ?",
+            "UPDATE waitlist_entries SET points = %s WHERE public_id = %s",
             (points, public_id),
         )
         conn.commit()
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE public_id = ?", (public_id,)
+            "SELECT * FROM waitlist_entries WHERE public_id = %s", (public_id,)
         )
         row = cursor.fetchone()
         return dict(row) if row else None
@@ -320,12 +320,12 @@ def set_verified(public_id: str, is_verified: bool) -> dict:
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "UPDATE waitlist_entries SET is_verified = ? WHERE public_id = ?",
+            "UPDATE waitlist_entries SET is_verified = %s WHERE public_id = %s",
             (is_verified, public_id),
         )
         conn.commit()
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE public_id = ?", (public_id,)
+            "SELECT * FROM waitlist_entries WHERE public_id = %s", (public_id,)
         )
         row = cursor.fetchone()
         return dict(row) if row else None
@@ -342,12 +342,12 @@ def set_flagged(public_id: str, flagged: bool) -> dict:
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "UPDATE waitlist_entries SET flagged = ? WHERE public_id = ?",
+            "UPDATE waitlist_entries SET flagged = %s WHERE public_id = %s",
             (flagged, public_id),
         )
         conn.commit()
         cursor.execute(
-            "SELECT * FROM waitlist_entries WHERE public_id = ?", (public_id,)
+            "SELECT * FROM waitlist_entries WHERE public_id = %s", (public_id,)
         )
         row = cursor.fetchone()
         return dict(row) if row else None

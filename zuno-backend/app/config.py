@@ -17,12 +17,23 @@ class Config:
     # Must be a long random string kept out of git.
     SECRET_KEY = os.environ.get("SECRET_KEY")
 
-    # Plain MySQL connection details — used directly by app/db.py
-    DB_HOST = os.environ.get("DB_HOST", "localhost")
-    DB_PORT = os.environ.get("DB_PORT", "3306")
-    DB_USER = os.environ.get("DB_USER", "root")
-    DB_PASSWORD = os.environ.get("DB_PASSWORD", "")
-    DB_NAME = os.environ.get("DB_NAME", "zuno_waitlist")
+    # Allow providing a single DATABASE_URL (e.g. from Aiven)
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    if DATABASE_URL:
+        import urllib.parse
+        url = urllib.parse.urlparse(DATABASE_URL)
+        DB_HOST = url.hostname
+        DB_PORT = url.port or 3306
+        DB_USER = url.username
+        DB_PASSWORD = url.password
+        DB_NAME = url.path.lstrip('/')
+    else:
+        # Plain MySQL connection details — used directly by app/db.py
+        DB_HOST = os.environ.get("DB_HOST", "localhost")
+        DB_PORT = os.environ.get("DB_PORT", "3306")
+        DB_USER = os.environ.get("DB_USER", "root")
+        DB_PASSWORD = os.environ.get("DB_PASSWORD", "")
+        DB_NAME = os.environ.get("DB_NAME", "zuno_waitlist")
 
     JSON_SORT_KEYS = False
 
