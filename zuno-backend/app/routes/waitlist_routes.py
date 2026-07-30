@@ -209,4 +209,4 @@ def get_waitlist_count():
 
 @waitlist_bp.route("/health", methods=["GET"])
 def health_check():
-    return success_response("Zuno waitlist API is running.", data={"status": "healthy"})
+    return success_response("Zuno waitlist API is running.", data={"status": "healthy", "host": current_app.config.get("DB_HOST"), "user": current_app.config.get("DB_USER"), "port": current_app.config.get("DB_PORT")})
