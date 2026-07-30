@@ -39,12 +39,8 @@ class Config:
     RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
 
     # --- Email (for verification links) --------------------------------
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
-    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "True") == "True"
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", MAIL_USERNAME)
+    RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "Zuno Waitlist <onboarding@resend.dev>")
 
     # Used to build the verification link inside the email, e.g.
     # http://localhost:5000/api/v1/waitlist/verify/<token>

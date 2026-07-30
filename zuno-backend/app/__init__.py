@@ -14,7 +14,7 @@ import logging
 from flask import Flask
 
 from app.config import config_by_name
-from app.extensions import cors, limiter, mail
+from app.extensions import cors, limiter
 from app.utils.error_handlers import register_error_handlers
 from app.routes.waitlist_routes import waitlist_bp
 from app.routes.admin_routes import admin_bp
@@ -51,7 +51,6 @@ def create_app(config_name: str | None = None) -> Flask:
     )
 
     limiter.init_app(app)
-    mail.init_app(app)
 
     # --- Error handling ----------------------------------------------
     register_error_handlers(app)
