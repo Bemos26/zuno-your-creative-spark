@@ -131,13 +131,13 @@ def join_waitlist():
             409,
             error_code="EMAIL_ALREADY_EXISTS",
         )
-    except Exception:
+    except Exception as e:
         logger.exception("Failed to create waitlist entry")
-        return error_response(
-            "Could not join the waitlist right now. Please try again.",
-            500,
-            error_code="DATABASE_ERROR",
-        )
+        return jsonify({
+            "success": False,
+            "error_code": "UNEXPECTED_ERROR",
+            "message": f"An unexpected error occurred: {str(e)}\n{traceback.format_exc()}"
+        }), 500
 
     # Send the verification email. If this fails (e.g. email provider
     # hiccup), we don't fail the whole signup — the person is already
