@@ -26,15 +26,16 @@ def init_db():
     with open('schema.sql', 'r') as f:
         sql_script = f.read()
 
-    with conn.cursor() as cursor:
-        for statement in sql_script.split(';'):
-            statement = statement.strip()
-            if statement:
-                print(f"Executing: {statement[:50]}...")
-                cursor.execute(statement)
-    
-    conn.commit()
-    conn.close()
+    try:
+        with conn.cursor() as cursor:
+            for statement in sql_script.split(';'):
+                statement = statement.strip()
+                if statement:
+                    print(f"Executing: {statement[:50]}...")
+                    cursor.execute(statement)
+        conn.commit()
+    finally:
+        conn.close()
     print("Database initialized successfully!")
 
 if __name__ == "__main__":

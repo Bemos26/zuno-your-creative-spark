@@ -40,7 +40,7 @@ class Config:
     # Comma-separated list in .env, e.g:
     # CORS_ORIGINS=http://localhost:3000,https://zuno.co.ke
     CORS_ORIGINS = [
-        origin.strip()
+        origin.strip().rstrip('/')
         for origin in os.environ.get("CORS_ORIGINS", "").split(",")
         if origin.strip()
     ]
