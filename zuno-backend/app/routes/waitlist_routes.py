@@ -15,6 +15,7 @@ barely touches anything else.
 
 import secrets
 import logging
+import traceback
 from urllib.parse import urlencode
 
 from flask import Blueprint, request, current_app, redirect
