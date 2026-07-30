@@ -134,11 +134,7 @@ def join_waitlist():
         )
     except Exception as e:
         logger.exception("Failed to create waitlist entry")
-        return jsonify({
-            "success": False,
-            "error_code": "UNEXPECTED_ERROR",
-            "message": f"An unexpected error occurred: {str(e)}\n{traceback.format_exc()}"
-        }), 500
+        return error_response(f"An unexpected error occurred: {str(e)}\n{traceback.format_exc()}", 500, error_code="UNEXPECTED_ERROR")
 
     # Send the verification email. If this fails (e.g. email provider
     # hiccup), we don't fail the whole signup — the person is already
